@@ -145,6 +145,35 @@ public function shop(Request $request)
         return redirect('login');
 
     }
+      public function onlineclass()
+    {
+        // Ensure user is logged in using session directly
+        if (!session()->has('id')) { // Check if 'id' (user ID) exists in session
+            return redirect()->route('login')->with('error', 'Please log in to view your online classes.');
+        }
+
+        $userId = session()->get('id'); // Get the user ID from session directly
+
+        // Fetch accepted bookings for the logged-in user, selecting required teacher and class details
+        $onlineClasses = DB::table('booking_classes')
+            ->join('live_classes', 'booking_classes.live_class_id', '=', 'live_classes.id')
+            ->join('teachers', 'live_classes.teacher_id', '=', 'teachers.id')
+            ->select(
+                'teachers.name as teacher_name',
+                'teachers.course',
+                'live_classes.title as live_class_title',
+                'live_classes.link as class_link', // The actual link to join the class
+                'live_classes.start_time'
+            )
+            ->where('booking_classes.user_id', $userId) // Filter by logged-in user
+            ->where('booking_classes.status', 'accepted') // Only accepted bookings
+            ->orderBy('live_classes.start_time', 'asc') // Order classes by their start time
+            ->get();
+
+        // Pass the data to the view located directly in 'resources/views/'
+        return view('onlineclass', compact('onlineClasses'));
+    }
+
    public function singleProduct($id)
 {
     $product = Product::find($id);
@@ -321,7 +350,7 @@ public function saveRating(Request $request, $productId)
     }
 
     // Handle booking a live class
-    public function bookLiveClass(Request $request)
+   public function bookLiveClass(Request $request)
     {
         // Redirect to login if user is not authenticated using session()->has('id')
         if (!session()->has('id')) {
@@ -331,10 +360,15 @@ public function saveRating(Request $request, $productId)
         // Get authenticated user's details using session()->get('id')
         $user = User::find(session()->get('id'));
 
+        // Check to ensure the user was found in the database
+        if (!$user) {
+            session()->forget('id');
+            return redirect('login')->with('error', 'Your user session is invalid. Please log in again to book a class.');
+        }
+
         // 1. Validate incoming request data
         $validator = Validator::make($request->all(), [
             'live_class_id' => 'required|exists:live_classes,id', // Ensures the live_class_id is valid
-            // student_name and student_email are now taken from the User model
         ]);
 
         if ($validator->fails()) {
@@ -351,16 +385,18 @@ public function saveRating(Request $request, $productId)
         $teacher = $liveClass->teacher;
 
         if (!$teacher) {
-             return redirect()->back()->with('error', 'Associated teacher not found for this class.');
+            return redirect()->back()->with('error', 'Associated teacher not found for this class.');
         }
 
         // 2. Check if the user (by user_id) has already booked this specific live class
+        //    AND if the booking is currently 'pending' or 'accepted'.
         $existingBooking = BookingClass::where('live_class_id', $liveClass->id)
-                                        ->where('user_id', session()->get('id')) // Changed to use session()->get('id')
-                                        ->first();
+                                         ->where('user_id', $user->id) // Use $user->id for consistency
+                                         ->whereIn('status', ['pending', 'accepted']) // Only consider pending or accepted bookings
+                                         ->first();
 
         if ($existingBooking) {
-            return redirect()->back()->with('error', 'You have already booked this specific class.');
+            return redirect()->back()->with('error', 'You have already booked this specific class, and your booking is ' . $existingBooking->status . '.');
         }
 
         // 3. Check seat availability for the teacher
@@ -371,26 +407,25 @@ public function saveRating(Request $request, $productId)
         // 4. Book the session: Increment teacher's booked_seats and create a booking record
         DB::beginTransaction();
         try {
-            // Increment booked_seats on the Teacher model
+            // Increment booked_seats on the Teacher model immediately when a new booking is created
             $teacher->increment('booked_seats');
 
             // Create a new booking record
             BookingClass::create([
                 'live_class_id' => $liveClass->id,
-                'user_id' => session()->get('id'), // Now using the session ID
-                'student_name' => $user->fullname, // Get name from retrieved user
-                'student_email' => $user->email, // Get email from retrieved user
+                'user_id' => $user->id,
+                'student_name' => $user->fullname,
+                'student_email' => $user->email,
                 'booking_date' => now(),
+                'status' => 'pending', // Set status to pending by default
             ]);
 
             DB::commit();
-            return redirect()->back()->with('success', 'Class booked successfully! Check your email for details.');
+            return redirect()->back()->with('success', 'Class booked successfully! Your booking is pending approval.');
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log the error for debugging
-            \Log::error("Live Class Booking Error: " . $e->getMessage());
+            Log::error("Live Class Booking Error: " . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to book session. An internal error occurred.');
         }
-    }
-}
+    }}
 

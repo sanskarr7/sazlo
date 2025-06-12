@@ -138,7 +138,13 @@
                                     <li><a href="{{URL::to('myOrders')}}">My Orders</a></li>
                                 </ul>
                             </li>
-                              <li class=""><a href="{{URL::to('liveteacher')}}">Live Class</a></li>
+                             <li><a href="#">Live Classes</a>
+                                <ul class="dropdown">
+                                   <li class=""><a href="{{URL::to('liveteacher')}}">Live Teacher</a></li>
+                                   <li class=""><a href="{{URL::to('onlineclass')}}">Online Classes</a></li>
+                                </ul>
+                            </li>
+                              {{-- <li class=""><a href="{{URL::to('liveteacher')}}">Live Class</a></li> --}}
                             <a>
                             @if(session()->has('id'))
                             <li><spam >{{ session()->get('fullname') }}
@@ -147,8 +153,13 @@
                                 </ul></spam>
                             </li> <!-- Display the user's name -->
                             @else
-                            <li><a href="{{URL::to('/login')}}">Login</a></li>
+                               <li><a href="#">SignUp</a>
+                                <ul class="dropdown">
+                                 <li><a href="{{URL::to('/login')}}">Login</a></li>
                             <li><a href="{{URL::to('/register')}}">Register</a></li>
+                                </ul>
+                            </li>
+
                             @endif
                         </ul>
                     </a>

@@ -56,8 +56,13 @@ Route::get('/singleliveteacher/{id}', [MainController::class, 'singleLiveTeacher
 Route::get('/teacher/{id}', [MainController::class, 'singleTeacherProfile'])->name('teacher.profile');
 
 // NEW: Book Live Class Session (POST route)
-// Route::post('/book-live-session', [MainController::class, 'bookLiveSession'])->name('book.live.session'); // New booking route
 Route::post('/book-class', [MainController::class, 'bookLiveClass'])->name('book.live.class'); // Changed method name
+Route::get('/booking', [AdminController::class, 'booking'])->name('booking');
+
+Route::post('/bookings/{id}/accept', [AdminController::class, 'acceptBooking'])->name('bookings.accept');
+Route::post('/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('bookings.reject');
+
+
 
 Route::get('/', [MainController::class, 'index'])->name('index');
 Route::get('/cart', [MainController::class, 'cart']);
@@ -76,6 +81,7 @@ Route::post('/addToCart', [MainController::class, 'addToCart']);
 Route::post('/updateCart', [MainController::class, 'updateCart']);
 Route::post('/save-rating/{productId}', [MainController::class, 'saveRating'])->name('front.saveRating');
 Route::post('/updateUser', [MainController::class, 'updateUser']);
+Route::get('/onlineclass', [MainController::class, 'onlineclass'])->name('onlineclass');
 
 // Contact Us Route
 Route::get('/contactus', function() {

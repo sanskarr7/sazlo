@@ -50,28 +50,46 @@
                         <p class="teacher-info">Start Time: <strong>{{ $teacherDisplayStartTime }}</strong></p>
                         <p class="teacher-info">Phone: <strong>{{ $teacher->number ?? 'N/A' }}</strong></p>
 
-                        @php
-                            $hasBookedAnyClass = false;
-                            $userId = session()->get('id'); // Get user ID from session
+                    @php
+    $userBooking = null;
+    $userId = session()->get('id'); // Get user ID from session
 
-                            if ($userId && $teacher->liveClasses) {
-                                foreach ($teacher->liveClasses as $liveClass) {
-                                    if (\App\Models\BookingClass::where('live_class_id', $liveClass->id)
-                                        ->where('user_id', $userId)
-                                        ->exists()) {
-                                        $hasBookedAnyClass = true;
-                                        break; // No need to check other classes if one is found
-                                    }
-                                }
-                            }
-                        @endphp
+    if ($userId && $teacher->liveClasses) {
+        foreach ($teacher->liveClasses as $liveClass) {
+            $booking = \App\Models\BookingClass::where('live_class_id', $liveClass->id)
+                                            ->where('user_id', $userId)
+                                            ->first(); // Get the actual booking record
+            if ($booking) {
+                $userBooking = $booking;
+                break; // Exit loop after finding the first booking
+            }
+        }
+    }
+@endphp
 
-                        @if($hasBookedAnyClass)
-                            <button class="book-session-btn" onclick="showMessage()">Already Booked</button>
-                        @else
-                            {{-- Original "Book a Session" button --}}
-                            <button class="book-session-btn" onclick="openBookSessionPopup()">Book a Session</button>
-                        @endif
+@if($userBooking)
+    @if($userBooking->status == 'pending')
+        <button class="book-session-btn" onclick="showMessage('Your booking is pending approval.')">Pending</button>
+    @elseif($userBooking->status == 'accepted')
+        <button class="book-session-btn" onclick="showMessage('Your booking has been accepted!')" style="background-color: #28a745;">Accepted</button>
+    @elseif($userBooking->status == 'rejected')
+        <button class="book-session-btn" onclick="showMessage('Your booking has been rejected.')" style="background-color: #dc3545;">Rejected</button>
+    @else
+        <button class="book-session-btn" onclick="openBookSessionPopup()">Book a Session</button>
+    @endif
+@else
+    <button class="book-session-btn" onclick="openBookSessionPopup()">Book a Session</button>
+@endif
+
+<script>
+    function showMessage(message) {
+        alert(message);
+    }
+
+    function openBookSessionPopup() {
+        // Your existing logic to open the booking form
+    }
+</script>
 
                         <button class="contact-btn" onclick="openContactPopup()">Contact</button>
                     </div>

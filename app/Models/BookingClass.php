@@ -17,6 +17,7 @@ class BookingClass extends Model
         'student_name',
         'student_email',
         'booking_date',
+        'status',
     ];
 
     protected $casts = [

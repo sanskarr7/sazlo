@@ -37,7 +37,7 @@
         </button>
         <h4 class="">&nbsp; &nbsp; &nbsp; This is the Admin Dashboard</h4>
         <ul class="navbar-nav navbar-nav-right">
-        
+
           <!-- <li class="nav-item nav-profile dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
               <img src="Dashboard/images/faces/face28.jpg" alt="profile"/>
@@ -45,11 +45,11 @@
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
               <a class="dropdown-item">
                 <i class="ti-power-off text-primary"></i>
-                Logout 
+                Logout
               </a>
             </div>
           </li> -->
-         
+
         </ul>
         <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
           <span class="icon-menu"></span>
@@ -59,8 +59,8 @@
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_settings-panel.html -->
-      
-      
+
+
       <!-- partial -->
       <!-- partial:partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
@@ -144,20 +144,23 @@
             </ul>
         </div>
     </li>
+
 <li class="nav-item">
-    <a class="nav-link" data-toggle="collapse" href="#teachersMenu" aria-expanded="false" aria-controls="teachersMenu">
-        <i class="icon-paper menu-icon"></i>
-        <span class="menu-title">Our Teachers</span>
-        <i class="menu-arrow"></i>
-    </a>
-    <div class="collapse" id="teachersMenu">
-        <ul class="nav flex-column sub-menu">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('teachers') }}">Manage Teachers</a>
-            </li>
-        </ul>
-    </div>
-</li>
+        <a class="nav-link" data-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
+            <i class="icon-bar-graph menu-icon"></i>
+            <span class="menu-title">Our Teacher</span>
+            <i class="menu-arrow"></i>
+        </a>
+        <div class="collapse" id="charts">
+            <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{{ route('teachers') }}">Manage Teacher</a></li>
+            </ul>
+        </div>
+        <div class="collapse" id="charts">
+            <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="{{ route('booking') }}">Manage Booking</a></li>
+            </ul>
+        </div>
 
 </ul>
 

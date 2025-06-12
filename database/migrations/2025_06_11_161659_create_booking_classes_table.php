@@ -14,13 +14,16 @@ return new class extends Migration
         Schema::create('booking_classes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('live_class_id')->constrained('live_classes')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); // Optional: Link to logged-in user
-            $table->string('student_name'); // Name provided in the form
-            $table->string('student_email'); // Email provided in the form
-            $table->timestamp('booking_date')->useCurrent(); // When the booking occurred
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('student_name');
+            $table->string('student_email');
+            $table->timestamp('booking_date')->useCurrent();
+
+            // CORRECTED: Removed ->after('booking_date')
+            $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
+
             $table->timestamps();
 
-            // Ensure unique booking per email per class
             $table->unique(['live_class_id', 'student_email']);
         });
     }

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderIteam;
 use App\Models\OrderItem;
 use App\Models\Teacher;
+use App\Models\BookingClass;
 use App\Models\LiveClass;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -515,5 +516,81 @@ public function deleteCategory($id)
         }
         return redirect()->back();
     }
-}
 
+    public function booking()
+    {
+        $bookings = DB::table('booking_classes')
+            ->join('live_classes', 'booking_classes.live_class_id', '=', 'live_classes.id')
+            ->join('teachers', 'live_classes.teacher_id', '=', 'teachers.id')
+            ->select(
+                'booking_classes.id', // Include booking ID for actions
+                'booking_classes.student_name',
+                'booking_classes.student_email',
+                'booking_classes.status as booking_status', // Alias to avoid conflict with live_classes.status
+                'live_classes.status as live_class_status', // Status of the live class
+                'teachers.name as teacher_name',
+                'teachers.picture as teacher_picture'
+            )
+            ->get();
+
+        return view('Dashboard.booking', compact('bookings'));
+    }
+
+    // New method to accept a booking
+    public function acceptBooking($id)
+    {
+        $booking = BookingClass::find($id);
+
+        if (!$booking) {
+            return redirect()->back()->with('error', 'Booking not found.');
+        }
+
+        // Only update if current status is pending
+        if ($booking->status === 'pending') {
+            $booking->status = 'accepted';
+            $booking->save();
+            // Note: booked_seats was already incremented on initial booking.
+            // If the logic dictates decrementing on rejection and re-incrementing on acceptance,
+            // this part needs more complex handling. For now, assuming initial increment is final
+            // unless explicitly rejected.
+            return redirect()->back()->with('success', 'Booking accepted successfully!');
+        } else {
+            return redirect()->back()->with('info', 'Booking status is already ' . $booking->status . '.');
+        }
+    }
+
+    // New method to reject a booking
+    public function rejectBooking($id)
+    {
+        $booking = BookingClass::find($id);
+
+        if (!$booking) {
+            return redirect()->back()->with('error', 'Booking not found.');
+        }
+
+        // Only update if current status is pending or accepted
+        if ($booking->status === 'pending' || $booking->status === 'accepted') {
+            DB::beginTransaction();
+            try {
+                $booking->status = 'rejected';
+                $booking->save();
+
+                // Decrement booked_seats for the teacher if the booking was previously counted
+                // This prevents overbooking when a rejected slot frees up
+                $teacher = $booking->liveClass->teacher;
+                if ($teacher && $teacher->booked_seats > 0) {
+                    $teacher->decrement('booked_seats');
+                }
+
+                DB::commit();
+                return redirect()->back()->with('success', 'Booking rejected successfully and seat freed!');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error("Booking Rejection Error: " . $e->getMessage());
+                return redirect()->back()->with('error', 'Failed to reject booking. An internal error occurred.');
+            }
+        } else {
+            return redirect()->back()->with('info', 'Booking status is already ' . $booking->status . '.');
+        }
+    }
+}
