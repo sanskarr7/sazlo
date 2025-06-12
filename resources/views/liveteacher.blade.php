@@ -53,11 +53,13 @@
                                         </div>
                                     </a>
                                 </td>
-                                <td class="cart__price" style="padding-right: 40px;">8 out of 20 Seats Remaining</td>
+                                <td class="cart__price" style="padding-right: 40px;">
+                                    {{ $teacher->total_seats - $teacher->booked_seats }} out of {{ $teacher->total_seats }} Seats Remaining
+                                </td>
                                 <td style="padding-left: 90px;">
                                     <div
                                         style="width: 60px; height: 60px; border-radius: 50%; background-color: black; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                                        12<br><span style="font-size: 10px;">Joined</span>
+                                        {{ $teacher->booked_seats }}<br><span style="font-size: 10px;">Joined</span>
                                     </div>
                                 </td>
                             </tr>

@@ -294,8 +294,13 @@ public function saveRating(Request $request, $productId)
 
     return redirect()->back()->with('success', 'Thank you for your review!');
 }
-     public function liveteacher()
+      public function liveteacher()
     {
+        // Add authentication check using session()->has('id')
+        if (!session()->has('id')) {
+            return redirect('login')->with('error', 'Please log in to view live classes.');
+        }
+
         // Fetch all teachers with their associated live classes
         $teachers = Teacher::with('liveClasses')->get();
         return view('liveteacher', compact('teachers'));
@@ -315,14 +320,21 @@ public function saveRating(Request $request, $productId)
         return view('singleliveteacher', compact('teacher'));
     }
 
-    // NEW: Handle booking a live class
-public function bookLiveClass(Request $request, LiveClass $liveClass)
+    // Handle booking a live class
+    public function bookLiveClass(Request $request)
     {
+        // Redirect to login if user is not authenticated using session()->has('id')
+        if (!session()->has('id')) {
+            return redirect('login')->with('error', 'Please log in to book a live class.');
+        }
+
+        // Get authenticated user's details using session()->get('id')
+        $user = User::find(session()->get('id'));
+
         // 1. Validate incoming request data
         $validator = Validator::make($request->all(), [
-            'student_name' => 'required|string|max:255',
-            'student_email' => 'required|email|max:255',
             'live_class_id' => 'required|exists:live_classes,id', // Ensures the live_class_id is valid
+            // student_name and student_email are now taken from the User model
         ]);
 
         if ($validator->fails()) {
@@ -342,18 +354,18 @@ public function bookLiveClass(Request $request, LiveClass $liveClass)
              return redirect()->back()->with('error', 'Associated teacher not found for this class.');
         }
 
-        // 2. Check seat availability for the teacher
-        if ($teacher->booked_seats >= $teacher->total_seats) {
-            return redirect()->back()->with('error', 'Sorry, all seats for this teacher\'s sessions are fully booked.');
-        }
-
-        // 3. Check if the user (by email) has already booked this specific live class
+        // 2. Check if the user (by user_id) has already booked this specific live class
         $existingBooking = BookingClass::where('live_class_id', $liveClass->id)
-                                        ->where('student_email', $request->input('student_email'))
+                                        ->where('user_id', session()->get('id')) // Changed to use session()->get('id')
                                         ->first();
 
         if ($existingBooking) {
             return redirect()->back()->with('error', 'You have already booked this specific class.');
+        }
+
+        // 3. Check seat availability for the teacher
+        if ($teacher->booked_seats >= $teacher->total_seats) {
+            return redirect()->back()->with('error', 'Sorry, all seats for this teacher\'s sessions are fully booked.');
         }
 
         // 4. Book the session: Increment teacher's booked_seats and create a booking record
@@ -365,9 +377,9 @@ public function bookLiveClass(Request $request, LiveClass $liveClass)
             // Create a new booking record
             BookingClass::create([
                 'live_class_id' => $liveClass->id,
-                'user_id' => Auth::id(), // Will be null if guest, otherwise logged-in user's ID
-                'student_name' => $request->input('student_name'),
-                'student_email' => $request->input('student_email'),
+                'user_id' => session()->get('id'), // Now using the session ID
+                'student_name' => $user->fullname, // Get name from retrieved user
+                'student_email' => $user->email, // Get email from retrieved user
                 'booking_date' => now(),
             ]);
 

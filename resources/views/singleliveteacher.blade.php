@@ -34,11 +34,45 @@
                         {{-- Dynamic information below the teacher's name --}}
                         <p class="teacher-info">Course: <strong>{{ $teacher->course ?? 'N/A' }}</strong></p>
                         <p class="teacher-info">Price: <strong>Rs {{ $teacher->price ?? 'N/A' }}</strong></p>
-                        <p class="teacher-info">Start Time: <strong>{{ \Carbon\Carbon::parse($teacher->start_time)->format('h:i A') ?? 'N/A' }}</strong></p>
+
+                        {{-- Displaying start_time from the earliest live class associated with the teacher --}}
+                        @php
+                            $teacherDisplayStartTime = 'N/A';
+                            // Find the earliest live class for this teacher based on start_time
+                            $earliestLiveClass = $teacher->liveClasses->sortBy('start_time')->first();
+
+                            if ($earliestLiveClass) {
+                                // Get the raw datetime string from the database for liveClass->start_time
+                                // Laravel typically casts datetime columns to Carbon objects, so ->toDateTimeString() is used
+                                $teacherDisplayStartTime = \Carbon\Carbon::parse($earliestLiveClass->start_time)->toDateTimeString();
+                            }
+                        @endphp
+                        <p class="teacher-info">Start Time: <strong>{{ $teacherDisplayStartTime }}</strong></p>
                         <p class="teacher-info">Phone: <strong>{{ $teacher->number ?? 'N/A' }}</strong></p>
 
-                        {{-- Changed button to open new booking modal --}}
-                        <button class="book-session-btn" onclick="openBookSessionPopup()">Book a Session</button>
+                        @php
+                            $hasBookedAnyClass = false;
+                            $userId = session()->get('id'); // Get user ID from session
+
+                            if ($userId && $teacher->liveClasses) {
+                                foreach ($teacher->liveClasses as $liveClass) {
+                                    if (\App\Models\BookingClass::where('live_class_id', $liveClass->id)
+                                        ->where('user_id', $userId)
+                                        ->exists()) {
+                                        $hasBookedAnyClass = true;
+                                        break; // No need to check other classes if one is found
+                                    }
+                                }
+                            }
+                        @endphp
+
+                        @if($hasBookedAnyClass)
+                            <button class="book-session-btn" onclick="showMessage()">Already Booked</button>
+                        @else
+                            {{-- Original "Book a Session" button --}}
+                            <button class="book-session-btn" onclick="openBookSessionPopup()">Book a Session</button>
+                        @endif
+
                         <button class="contact-btn" onclick="openContactPopup()">Contact</button>
                     </div>
                     <div class="profile-content">
@@ -49,7 +83,6 @@
                         <div class="more-info-section">
                             <h3>More Information</h3>
                             <ul>
-                                {{-- Assuming 'more_info' is a string where each line is a separate item --}}
                                 @if($teacher->more_info)
                                     @foreach(explode("\n", $teacher->more_info) as $item)
                                         @if(trim($item) !== '')
@@ -67,7 +100,12 @@
                                 <ul>
                                     @foreach($teacher->liveClasses as $liveClass)
                                         <li>
-                                            <strong>{{ $liveClass->class_name }}</strong> on {{ \Carbon\Carbon::parse($liveClass->date)->format('M d, Y') }} at {{ \Carbon\Carbon::parse($liveClass->time)->format('h:i A') }} ({{ $liveClass->seats_remaining }} seats remaining)
+                                            <strong>{{ $liveClass->class_name }}</strong>
+                                            <small class="text-muted">
+                                                {{-- Combined date and time for live class start time as requested --}}
+                                              {{ $teacherDisplayStartTime }}     ({{ $liveClass->status ?? 'N/A' }})
+                                            </small>
+                                            {{ $liveClass->seats_remaining }}
                                         </li>
                                     @endforeach
                                 </ul>
@@ -93,7 +131,6 @@
 </div>
 
 {{-- NEW: Book Session Modal --}}
-{{-- In singleliveteacher.blade.php, find the <div id="bookSessionModal" class="modal"> --}}
 <div id="bookSessionModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
     <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; position: relative;">
         <span class="close-button" onclick="closeBookSessionPopup()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
