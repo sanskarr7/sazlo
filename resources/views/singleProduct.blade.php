@@ -36,7 +36,7 @@
             <div class="col-lg-6">
                 <div class="product__details__text">
                     <h2 class="product-title">{{$product->title}}</h2>
-                    
+
                     <div class="rating-section">
                         <div class="d-flex align-items-start">
                             <div class="star-rating me-3">
@@ -60,16 +60,41 @@
                         <p class="description">{{$product->description}}</p>
             </div>
 
-                    <form action="{{url('addToCart')}}" method="POST" class="mb-4">
-                @csrf
-                <div class="product__details__cart__option">
-                    <div class="quantity">
-                                <input type="number" name="quantity" class="form-control quantity-input" min="1" max="{{$product->quantity}}" value="1">
-                    </div>
-                    <input type="hidden" name="id" value="{{$product->id}}" />
-                            <button type="submit" name="addToCart" class="primary-btn">Add to Cart</button>
-                </div>
-            </form>
+                  <!-- Replace the existing form section with this code -->
+@php
+    // Check if product is already in cart
+    $inCart = false;
+    if(auth()->check()) {
+        $inCart = \App\Models\Cart::where('customerId', auth()->id())
+                       ->where('productId', $product->id)
+                       ->exists();
+    }
+@endphp
+
+@if($inCart)
+    <div class="product__details__cart__option">
+        <button type="button" class="primary-btn" disabled>
+            <i class="fas fa-check-circle me-2"></i> Already in Cart
+        </button>
+        <a href="{{ route('cart.view') }}" class="btn btn-outline-dark">
+            <i class="fas fa-shopping-cart me-2"></i> View Cart
+        </a>
+    </div>
+@else
+    <form action="{{url('addToCart')}}" method="POST" class="mb-4">
+        @csrf
+        <div class="product__details__cart__option">
+            <div class="quantity">
+                <input type="number" name="quantity" class="form-control quantity-input"
+                       min="1" max="{{$product->quantity}}" value="1">
+            </div>
+            <input type="hidden" name="id" value="{{$product->id}}" />
+            <button type="submit" name="addToCart" class="primary-btn">
+                <i class="fas fa-cart-plus me-2"></i> Add to Cart
+            </button>
+        </div>
+    </form>
+@endif
 
                     <div class="product-meta">
                         <ul class="list-unstyled">
@@ -410,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Thumbnail click handling
     const thumbnails = document.querySelectorAll('.thumbnail');
     const mainImage = document.querySelector('.main-image');
-    
+
     thumbnails.forEach(thumbnail => {
         thumbnail.addEventListener('click', function() {
             // Remove active class from all thumbnails

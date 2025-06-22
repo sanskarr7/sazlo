@@ -261,21 +261,53 @@ public function updateUser(Request $data)
         }
         return view ('register');
 }
+// public function addToCart(Request $data)
+// {
+//  if(session()->has('id'))
+//  {
+//     $iteam=new Cart();
+//     $iteam->productId=$data->input('id');
+//     $iteam->quantity=$data->input('quantity');
+//     $iteam->customerId=session()->get('id');
+//     $iteam->save();
+//     return redirect()->back()->with('success','Congratulations ! Iteam Added Into Cart');
+// }
+// else{
+//     return redirect('login')->with('Error','Info ! Please Login Your Account');
+// }
+// }
+
 public function addToCart(Request $data)
 {
- if(session()->has('id'))
- {
-    $iteam=new Cart();
-    $iteam->productId=$data->input('id');
-    $iteam->quantity=$data->input('quantity');
-    $iteam->customerId=session()->get('id');
-    $iteam->save();
-    return redirect()->back()->with('success','Congratulations ! Iteam Added Into Cart');
+    $validatedData = $data->validate([
+        'id' => 'required|exists:products,id',
+        'quantity' => 'required|integer|min:1'
+    ]);
+
+    if (!session()->has('id')) {
+        return redirect('login')->with('error', 'Info! Please login to your account.');
+    }
+
+    // Check if the product is already in the user's cart
+    $existingCartItem = Cart::where('customerId', session()->get('id'))
+        ->where('productId', $validatedData['id'])
+        ->first();
+
+    if ($existingCartItem) {
+        return redirect()->back()->with('error', 'This product is already in your cart.');
+    }
+
+    // Add new product to the cart
+    $item = new Cart();
+    $item->productId = $validatedData['id'];
+    $item->quantity = $validatedData['quantity'];
+    $item->customerId = session()->get('id');
+    $item->save();
+
+    return redirect()->back()->with('success', 'Congratulations! Item added to the cart.');
 }
-else{
-    return redirect('login')->with('Error','Info ! Please Login Your Account');
-}
-}
+
+
 public function updateCart(Request $data)
 {
  if(session()->has('id'))

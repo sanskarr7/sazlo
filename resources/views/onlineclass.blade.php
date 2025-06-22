@@ -64,7 +64,7 @@
                                                         <button class="btn btn-secondary btn-sm" disabled>
                                                             @if (!$class->class_link)
                                                                 Link Not Available
-                                                            @elseif ($currentTime->lessThan($startTime->copy()->subMinutes(15)))
+                                                            @elseif ($currentTime->lessThan($startTime->copy()->subMinutes(5)))
                                                                 Join (Upcoming)
                                                             @else
                                                                 Join Class
