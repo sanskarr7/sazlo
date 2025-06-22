@@ -35,7 +35,7 @@
         .product__item__pic:hover {
             opacity: 0.8;
         }
-        
+
         /* Product Info Styles */
         .product__item__text {
             text-align: center;
@@ -68,6 +68,29 @@
         .rating {
             margin-bottom: 5px;
         }
+        .recommended-products {
+    padding: 40px 0;
+    border-top: 1px solid #eee;
+    margin-top: 40px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #333;
+    position: relative;
+}
+
+.section-title:after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #007bff;
+    margin: 15px auto 0;
+}
     </style>
 
     <!-- Breadcrumb Section Begin -->
@@ -357,12 +380,51 @@
                     </div>
 
 
-                  
+
                 </div>
             </div>
             {{$filteredProducts->links()}}
         </div>
+        @if(isset($recommendedProducts) && $recommendedProducts->count() > 0)
+    <section class="recommended-products mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="section-title">Recommended For You</h3>
+                </div>
+            </div>
+            <div class="row product__filter">
+                @foreach($recommendedProducts as $item)
+                <div class="col-lg-3 col-md-6 col-sm-6 col-md-6 col-sm-6 mix {{$item->type}}">
+                    <div class="product__item">
+                        <a href="{{URL::to('single/'.$item->id)}}">
+                        <div class="product__item__pic set-bg" data-setbg="{{URL::asset('uploads/profile/products/'.$item->picture)}}">
+                            <span class="label">Recommended</span>
+                        </div>
+                        </a>
+                        <div class="product__item__text">
+                            <h5 class="product-title">{{ $item->title }}</h5>
+                            <h5 class="product-price">RS {{ $item->price }}.00</h5>
+                            <div class="rating">
+                                @for($i = 0; $i < 5; $i++)
+                                    @if($i < round($item->averageRating))
+                                        <i class="fa fa-star text-warning"></i>
+                                    @else
+                                        <i class="fa fa-star-o text-secondary"></i>
+                                    @endif
+                                @endfor
+                            </div>
+                            <p class="review-count">{{ $item->totalReviews }} reviews</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
     </section>
+@endif
+    </section>
+
     <!-- Shop Section End -->
 
    <x-footer/>

@@ -76,34 +76,57 @@ class MainController extends Controller
 
 public function shop(Request $request)
 {
+    // At the beginning of the shop method
+$recommendedProducts = collect();
+
+// For non-logged-in users
+if (!session()->has('id')) {
+    // Popular products (based on orders)
+    $popularProductIds = OrderIteam::groupBy('productId')
+        ->orderByRaw('COUNT(*) DESC')
+        ->take(4)
+        ->pluck('productId');
+
+    if ($popularProductIds->count() > 0) {
+        $recommendedProducts = Product::whereIn('id', $popularProductIds)
+            ->inRandomOrder()
+            ->take(4)
+            ->get();
+    }
+
+    // If still not enough, fill with random products
+    if ($recommendedProducts->count() < 4) {
+        $randomProducts = Product::whereNotIn('id', $popularProductIds)
+            ->inRandomOrder()
+            ->take(4 - $recommendedProducts->count())
+            ->get();
+
+        $recommendedProducts = $recommendedProducts->merge($randomProducts);
+    }
+}
     $search = $request->input('search', '');
     $minPrice = $request->input('min_price', 0);
     $maxPrice = $request->input('max_price', PHP_INT_MAX);
-    $category = $request->input('category', ''); // Get category from request
+    $category = $request->input('category', '');
 
-    // Start with a base query
+    // Base query
     $query = Product::query();
 
-    // Apply category filter if specified
     if ($category) {
-        $query->whereHas('category', function($q) use ($category) {
-            $q->where('name', $category);
-        });
+        $query->where('category', $category);
     }
 
-    // Apply search filter if specified
     if ($search) {
         $query->where('title', 'like', '%' . $search . '%');
     }
 
-    // Apply price filter
     if ($minPrice || $maxPrice < PHP_INT_MAX) {
         $query->whereBetween('price', [$minPrice, $maxPrice]);
     }
 
-    // Fetch filtered products with reviews and average ratings
     $filteredProducts = $query->paginate(8);
 
+    // Calculate ratings for filtered products
     foreach ($filteredProducts as $product) {
         $product->averageRating = Review::where('product_id', $product->id)
                                         ->where('status', 1)
@@ -113,13 +136,95 @@ public function shop(Request $request)
                                         ->count();
     }
 
-    $noResults = $filteredProducts->isEmpty(); // Check if no products are found
+    // Hybrid Recommendation Logic
+    $recommendedProducts = collect();
 
-    // Return the view with filtered products, search terms, price, ratings, and no results flag
-    return view('shop', compact('filteredProducts', 'search', 'minPrice', 'maxPrice', 'noResults', 'category'));
+    // If user is logged in, use collaborative filtering
+    if (session()->has('id')) {
+        $userId = session()->get('id');
+
+        // Get products user has purchased/ordered
+       // Get products user has purchased/ordered
+$userOrderedProducts = OrderIteam::whereHas('order', function($q) use ($userId) {
+    $q->where('customerId', $userId);
+})->pluck('productId')->unique()->toArray();
+
+// Get products in user's cart
+$userCartProducts = Cart::where('customerId', $userId)
+                      ->pluck('productId')
+                      ->toArray();
+
+// Combine all user-interacted products
+$userProductIds = array_unique(array_merge($userOrderedProducts, $userCartProducts));
+
+if (!empty($userProductIds)) {
+    // Find users who bought similar products (collaborative filtering)
+    $similarUserIds = OrderIteam::whereIn('productId', $userProductIds)
+        ->whereHas('order', function($q) use ($userId) {
+            $q->where('customerId', '!=', $userId);
+        })
+        ->with('order') // Eager load the order relationship
+        ->get()
+        ->pluck('order.customerId') // Now correctly references the relationship
+        ->unique()
+        ->toArray();
+
+    // Get products bought by similar users (excluding what current user already has)
+    if (!empty($similarUserIds)) {
+        $collabProducts = OrderIteam::whereHas('order', function($q) use ($similarUserIds) {
+                $q->whereIn('customerId', $similarUserIds);
+            })
+            ->whereNotIn('productId', $userProductIds)
+            ->groupBy('productId')
+            ->orderByRaw('COUNT(*) DESC')
+            ->take(4)
+            ->pluck('productId');
+
+        if ($collabProducts->count() > 0) {
+            $recommendedProducts = Product::whereIn('id', $collabProducts)
+                ->where('id', '!=', $request->input('product_id', 0))
+                ->get();
+        }
+    }
 }
+    }
 
+    // If not enough recommendations from collaborative filtering, use content-based
+    if ($recommendedProducts->count() < 4) {
+        $contentBasedProducts = Product::whereNotIn('id', $userProductIds ?? [])
+            ->inRandomOrder()
+            ->take(4 - $recommendedProducts->count())
+            ->get();
 
+        $recommendedProducts = $recommendedProducts->merge($contentBasedProducts);
+    }
+
+    // Calculate ratings for recommended products
+    foreach ($recommendedProducts as $product) {
+        $product->averageRating = Review::where('product_id', $product->id)
+                                      ->where('status', 1)
+                                      ->avg('rating');
+        $product->totalReviews = Review::where('product_id', $product->id)
+                                     ->where('status', 1)
+                                     ->count();
+    }
+
+    $noResults = $filteredProducts->isEmpty();
+
+    return view('shop', compact(
+        'filteredProducts',
+        'search',
+        'minPrice',
+        'maxPrice',
+        'noResults',
+        'category',
+        'recommendedProducts'
+    ));
+    $recommendedProducts = Cache::remember('recommendations_'.(session()->get('id') ?? 'guest'), now()->addHours(1), function() use ($request) {
+    // Your recommendation logic here
+    return $recommendedProducts;
+});
+}
 
     public function profile()
     {
@@ -174,14 +279,34 @@ public function shop(Request $request)
         return view('onlineclass', compact('onlineClasses'));
     }
 
-   public function singleProduct($id)
+  public function singleProduct($id)
 {
-    $product = Product::find($id);
-    $reviews = Review::where('product_id', $id)->where('status', 1)->get(); // Fetch approved reviews
-    $averageRating = Review::where('product_id', $id)->where('status', 1)->avg('rating'); // Calculate average rating
+    $product = Product::findOrFail($id);
+
+    // Track view if user is logged in
+    if (session()->has('id')) {
+        try {
+            DB::table('product_views')->updateOrInsert(
+                ['user_id' => session()->get('id'), 'product_id' => $id],
+                ['viewed_at' => now()]
+            );
+        } catch (\Exception $e) {
+            // Log error but don't break the page
+            \Log::error("Failed to track product view: " . $e->getMessage());
+        }
+    }
+
+    $reviews = Review::where('product_id', $id)
+                   ->where('status', 1)
+                   ->get();
+
+    $averageRating = Review::where('product_id', $id)
+                         ->where('status', 1)
+                         ->avg('rating');
 
     $totalReviews = $reviews->count();
-    return view('singleProduct', compact('product', 'reviews', 'averageRating','totalReviews'));
+
+    return view('singleProduct', compact('product', 'reviews', 'averageRating', 'totalReviews'));
 }
 
     public function deleteCartItem($id)
