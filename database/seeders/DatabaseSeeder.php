@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AdminUserSeeder::class,
-            RecommendationTestDataSeeder::class,
+            RecommendationTestSeeder::class,
         ]);
     }
 }

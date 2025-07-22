@@ -9,11 +9,12 @@
                         <div class="card-body">
                             <p class="card-title mb-3">Teacher Management</p>
 
-                            <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#addTeacherModal">
+                            <button type="button" class="btn btn-primary mb-3" data-toggle="modal"
+                                data-target="#addTeacherModal">
                                 <i class="mdi mdi-plus"></i> Add Teacher
                             </button>
 
-                            @if(session('success'))
+                            @if (session('success'))
                                 <div class="alert alert-success alert-dismissible fade show mt-2">
                                     {{ session('success') }}
                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -22,7 +23,7 @@
                                 </div>
                             @endif
 
-                            @if(session('error'))
+                            @if (session('error'))
                                 <div class="alert alert-danger alert-dismissible fade show mt-2">
                                     {{ session('error') }}
                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -54,10 +55,12 @@
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>
-                                                    @if($teacher->picture)
-                                                        <img src="{{ asset('storage/' . $teacher->picture) }}" alt="Teacher Picture" width="50" class="img-thumbnail">
+                                                    @if ($teacher->picture)
+                                                        <img src="{{ asset($teacher->picture) }}" alt="Teacher Picture"
+                                                            width="50" class="img-thumbnail">
                                                     @endif
                                                 </td>
+
                                                 <td>{{ $teacher->name }}</td>
                                                 <td>{{ $teacher->number }}</td>
                                                 <td>{{ $teacher->course }}</td>
@@ -69,30 +72,39 @@
                                                 <td>
                                                     @forelse($teacher->liveClasses as $liveClass)
                                                         <div class="mb-1">
-                                                            <a href="{{ $liveClass->link }}" target="_blank" class="badge badge-info">
+                                                            <a href="{{ $liveClass->link }}" target="_blank"
+                                                                class="badge badge-info">
                                                                 <i class="mdi mdi-video"></i> {{ $liveClass->title }}
                                                             </a>
                                                             <br>
-                                                            <small class="text-muted">{{ \Carbon\Carbon::parse($liveClass->start_time)->format('M d, H:i') }} ({{ $liveClass->status }})</small>
-                                                            <div class="btn-group btn-group-sm ml-1" role="group" aria-label="Live Class Actions">
-                                                                <button type="button" class="btn btn-outline-secondary edit-live-class-btn"
-                                                                        data-toggle="modal" data-target="#editLiveClassModal"
-                                                                        data-id="{{ $liveClass->id }}"
-                                                                        data-title="{{ $liveClass->title }}"
-                                                                        data-link="{{ $liveClass->link }}"
-                                                                        data-start_time="{{ \Carbon\Carbon::parse($liveClass->start_time)->format('Y-m-d\TH:i') }}"
-                                                                        data-end_time="{{ $liveClass->end_time ? \Carbon\Carbon::parse($liveClass->end_time)->format('Y-m-d\TH:i') : '' }}"
-                                                                        data-description="{{ $liveClass->description }}"
-                                                                        data-status="{{ $liveClass->status }}"
-                                                                        title="Edit Live Class">
+                                                            <small
+                                                                class="text-muted">{{ \Carbon\Carbon::parse($liveClass->start_time)->format('M d, H:i') }}
+                                                                ({{ $liveClass->status }})</small>
+                                                            <div class="btn-group btn-group-sm ml-1" role="group"
+                                                                aria-label="Live Class Actions">
+                                                                <button type="button"
+                                                                    class="btn btn-outline-secondary edit-live-class-btn"
+                                                                    data-toggle="modal"
+                                                                    data-target="#editLiveClassModal"
+                                                                    data-id="{{ $liveClass->id }}"
+                                                                    data-title="{{ $liveClass->title }}"
+                                                                    data-link="{{ $liveClass->link }}"
+                                                                    data-start_time="{{ \Carbon\Carbon::parse($liveClass->start_time)->format('Y-m-d\TH:i') }}"
+                                                                    data-end_time="{{ $liveClass->end_time ? \Carbon\Carbon::parse($liveClass->end_time)->format('Y-m-d\TH:i') : '' }}"
+                                                                    data-description="{{ $liveClass->description }}"
+                                                                    data-status="{{ $liveClass->status }}"
+                                                                    title="Edit Live Class">
                                                                     <i class="mdi mdi-pencil"></i>
                                                                 </button>
                                                                 <a href="#"
-                                                                   onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this live class?')) { document.getElementById('delete-live-class-form-{{$liveClass->id}}').submit(); }"
-                                                                   class="btn btn-outline-danger" title="Delete Live Class">
+                                                                    onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this live class?')) { document.getElementById('delete-live-class-form-{{ $liveClass->id }}').submit(); }"
+                                                                    class="btn btn-outline-danger"
+                                                                    title="Delete Live Class">
                                                                     <i class="mdi mdi-delete"></i>
                                                                 </a>
-                                                                <form id="delete-live-class-form-{{$liveClass->id}}" action="{{ route('live-classes.delete', $liveClass->id) }}" method="POST" style="display: none;">
+                                                                <form id="delete-live-class-form-{{ $liveClass->id }}"
+                                                                    action="{{ route('live-classes.delete', $liveClass->id) }}"
+                                                                    method="POST" style="display: none;">
                                                                     @csrf
                                                                     @method('DELETE')
                                                                 </form>
@@ -102,34 +114,37 @@
                                                         <span class="badge badge-secondary">No classes scheduled</span>
                                                     @endforelse
                                                     <button class="btn btn-sm btn-success mt-2 add-live-class-btn"
-                                                            data-toggle="modal"
-                                                            data-target="#addLiveClassModal"
-                                                            data-teacher_id="{{ $teacher->id }}" title="Add New Live Class">
+                                                        data-toggle="modal" data-target="#addLiveClassModal"
+                                                        data-teacher_id="{{ $teacher->id }}"
+                                                        title="Add New Live Class">
                                                         <i class="mdi mdi-plus"></i> Schedule
                                                     </button>
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
                                                         <button class="btn btn-sm btn-outline-primary edit-teacher-btn"
-                                                                data-toggle="modal" data-target="#editTeacherModal"
-                                                                data-id="{{ $teacher->id }}"
-                                                                data-name="{{ $teacher->name }}"
-                                                                data-number="{{ $teacher->number }}"
-                                                                data-course="{{ $teacher->course }}"
-                                                                data-price="{{ $teacher->price }}"
-                                                                data-total_seats="{{ $teacher->total_seats }}"
-                                                                data-description="{{ $teacher->description }}"
-                                                                data-more_info="{{ $teacher->more_info }}"
-                                                                data-picture_url="{{ $teacher->picture ? asset('storage/' . $teacher->picture) : '' }}"
-                                                                title="Edit Teacher">
+                                                            data-toggle="modal" data-target="#editTeacherModal"
+                                                            data-id="{{ $teacher->id }}"
+                                                            data-name="{{ $teacher->name }}"
+                                                            data-number="{{ $teacher->number }}"
+                                                            data-course="{{ $teacher->course }}"
+                                                            data-price="{{ $teacher->price }}"
+                                                            data-total_seats="{{ $teacher->total_seats }}"
+                                                            data-description="{{ $teacher->description }}"
+                                                            data-more_info="{{ $teacher->more_info }}"
+                                                            data-picture_url="{{ $teacher->picture ? asset($teacher->picture) : '' }}"
+                                                            title="Edit Teacher">
                                                             <i class="mdi mdi-pencil"></i>
                                                         </button>
                                                         <a href="#"
-                                                           onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this teacher?')) { document.getElementById('delete-teacher-form-{{$teacher->id}}').submit(); }"
-                                                           class="btn btn-sm btn-outline-danger" title="Delete Teacher">
+                                                            onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this teacher?')) { document.getElementById('delete-teacher-form-{{ $teacher->id }}').submit(); }"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            title="Delete Teacher">
                                                             <i class="mdi mdi-delete"></i>
                                                         </a>
-                                                        <form id="delete-teacher-form-{{$teacher->id}}" action="{{ route('teachers.delete', $teacher->id) }}" method="GET" style="display: none;">
+                                                        <form id="delete-teacher-form-{{ $teacher->id }}"
+                                                            action="{{ route('teachers.delete', $teacher->id) }}"
+                                                            method="GET" style="display: none;">
                                                             @csrf {{-- GET requests don't typically use @csrf, but including it doesn't hurt --}}
                                                         </form>
                                                     </div>
@@ -231,11 +246,13 @@
                         </div>
                         <div class="form-group">
                             <label>Price</label>
-                            <input type="number" step="0.01" name="price" id="edit_price" class="form-control" required>
+                            <input type="number" step="0.01" name="price" id="edit_price"
+                                class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label>Total Seats</label>
-                            <input type="number" name="total_seats" id="edit_total_seats" class="form-control" min="0" required>
+                            <input type="number" name="total_seats" id="edit_total_seats" class="form-control"
+                                min="0" required>
                         </div>
                         <div class="form-group">
                             <label>Description</label>
@@ -247,9 +264,11 @@
                         </div>
                         <div class="form-group">
                             <label for="edit_picture">Teacher Picture</label>
-                            <input type="file" name="picture" id="edit_picture" class="form-control-file" accept="image/*">
+                            <input type="file" name="picture" id="edit_picture" class="form-control-file"
+                                accept="image/*">
                             <div class="mt-2" id="current_picture_container">
-                                <img src="" alt="Teacher Picture" width="100" class="img-thumbnail" id="current_picture">
+                                <img src="" alt="Teacher Picture" width="100" class="img-thumbnail"
+                                    id="current_picture">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -277,12 +296,15 @@
                         <input type="hidden" name="teacher_id" id="add_live_class_teacher_id">
                         <div class="form-group">
                             <label>Class Title</label>
-                            <input type="text" name="title" class="form-control" placeholder="e.g., Physics Q&A Session" required>
+                            <input type="text" name="title" class="form-control"
+                                placeholder="e.g., Physics Q&A Session" required>
                         </div>
                         <div class="form-group">
                             <label>Meeting URL</label>
-                            <input type="url" name="link" class="form-control" placeholder="https://meet.google.com/abc-xyz" required>
-                            <small class="form-text text-muted">Google Meet, Zoom, or other video conference link</small>
+                            <input type="url" name="link" class="form-control"
+                                placeholder="https://meet.google.com/abc-xyz" required>
+                            <small class="form-text text-muted">Google Meet, Zoom, or other video conference
+                                link</small>
                         </div>
                         <div class="form-group">
                             <label>Start Time</label>
@@ -330,19 +352,23 @@
                         @method('PUT')
                         <div class="form-group">
                             <label>Class Title</label>
-                            <input type="text" name="title" id="edit_live_class_title" class="form-control" required>
+                            <input type="text" name="title" id="edit_live_class_title" class="form-control"
+                                required>
                         </div>
                         <div class="form-group">
                             <label>Meeting URL</label>
-                            <input type="url" name="link" id="edit_live_class_link" class="form-control" required>
+                            <input type="url" name="link" id="edit_live_class_link" class="form-control"
+                                required>
                         </div>
                         <div class="form-group">
                             <label>Start Time</label>
-                            <input type="datetime-local" name="start_time" id="edit_live_class_start_time" class="form-control" required>
+                            <input type="datetime-local" name="start_time" id="edit_live_class_start_time"
+                                class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label>End Time (Optional)</label>
-                            <input type="datetime-local" name="end_time" id="edit_live_class_end_time" class="form-control">
+                            <input type="datetime-local" name="end_time" id="edit_live_class_end_time"
+                                class="form-control">
                         </div>
                         <div class="form-group">
                             <label>Description (Optional)</label>
@@ -372,10 +398,10 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         // Handle Edit Teacher Modal
         document.querySelectorAll('.edit-teacher-btn').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const teacherId = this.dataset.id;
                 const form = document.getElementById('editTeacherForm');
                 form.action = `/teachers/update/${teacherId}`; // Update form action URL
@@ -389,7 +415,8 @@
                 document.getElementById('edit_more_info').value = this.dataset.more_info;
 
                 const currentPicture = document.getElementById('current_picture');
-                const currentPictureContainer = document.getElementById('current_picture_container');
+                const currentPictureContainer = document.getElementById(
+                    'current_picture_container');
                 if (this.dataset.picture_url) {
                     currentPicture.src = this.dataset.picture_url;
                     currentPictureContainer.style.display = 'block';
@@ -402,7 +429,7 @@
 
         // Handle Add Live Class Modal
         document.querySelectorAll('.add-live-class-btn').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const teacherId = this.dataset.teacher_id;
                 const form = document.getElementById('addLiveClassForm');
                 form.action = `/teachers/${teacherId}/live-classes`; // Update form action URL
@@ -416,16 +443,19 @@
 
         // Handle Edit Live Class Modal
         document.querySelectorAll('.edit-live-class-btn').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 const liveClassId = this.dataset.id;
                 const form = document.getElementById('editLiveClassForm');
                 form.action = `/live-classes/${liveClassId}`; // Update form action URL
 
                 document.getElementById('edit_live_class_title').value = this.dataset.title;
                 document.getElementById('edit_live_class_link').value = this.dataset.link;
-                document.getElementById('edit_live_class_start_time').value = this.dataset.start_time;
-                document.getElementById('edit_live_class_end_time').value = this.dataset.end_time;
-                document.getElementById('edit_live_class_description').value = this.dataset.description;
+                document.getElementById('edit_live_class_start_time').value = this.dataset
+                    .start_time;
+                document.getElementById('edit_live_class_end_time').value = this.dataset
+                    .end_time;
+                document.getElementById('edit_live_class_description').value = this.dataset
+                    .description;
                 document.getElementById('edit_live_class_status').value = this.dataset.status;
             });
         });

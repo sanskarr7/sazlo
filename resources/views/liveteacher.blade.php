@@ -37,13 +37,12 @@
                                     <a href="{{ url('/singleliveteacher/' . $teacher->id) }}">
                                         <div class="product__cart__item__pic">
                                             {{-- Display teacher picture if available --}}
-                                            @if($teacher->picture)
-                                            <img src="{{ asset('uploads/teachers/' . $teacher->picture) }}" width="100px"
-                                                alt="Teacher">
-                                            @else
-                                            <img src="{{ asset('img/teachers/default.jpg') }}" width="100px"
-                                                alt="Default Teacher Image">
-                                            @endif
+                                          @if($teacher->picture)
+    <img src="{{ asset($teacher->picture) }}" width="100px" alt="Teacher">
+@else
+    <img src="{{ asset('img/teachers/default.jpg') }}" width="100px" alt="Default Teacher Image">
+@endif
+
                                         </div>
                                         <div class="product__cart__item__text">
                                             <h5 style="font-weight: bold;">{{ $teacher->name }}</h5>

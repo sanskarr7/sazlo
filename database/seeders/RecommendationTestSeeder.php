@@ -28,14 +28,12 @@ class RecommendationTestSeeder extends Seeder
         OrderIteam::truncate();
         Order::truncate();
         Product::truncate();
-        User::where('type', 'Customer')->delete(); // Only deletes customers
-        // Note: Admin users are not deleted by the line above,
-        // but migrate:fresh will clear them anyway.
+        User::where('type', 'Customer')->delete();
         Category::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        // Create distinct categories
-        $categories = ['Mobile', 'Clothing', 'Skin Care', 'Stationery', 'Groceries'];
+        // Create distinct categories for digital courses
+        $categories = ['Programming', 'Design', 'Marketing', 'Business', 'Photography', 'Music Production'];
         foreach ($categories as $category) {
             Category::create(['name' => $category]);
         }
@@ -43,108 +41,115 @@ class RecommendationTestSeeder extends Seeder
         // --- Create Admin User ---
         User::create([
             'fullname' => 'Admin User',
-            'email' => 'admin@test.com',
-            'password' => 'admin', // Simple password for testing
+            'email' => 'admin',
+            'password' => 'admin', 
             'type' => 'Admin',
             'status' => 'Active',
-            'picture' => 'default.jpg'
+            'picture' => 'default_admin.png'
         ]);
 
         // Create test users with simple passwords
         $users = [];
         foreach (range(1, 3) as $i) {
             $users[] = User::create([
-                'fullname' => 'User '.$i,
-                'email' => 'user'.$i.'@test.com',
-                'password' => 'user'.$i, // Simple password
-                'type' => 'Customer',
+                'fullname' => 'Student User '.$i,
+                'email' => 'student'.$i.'@test.com',
+                'password' => 'student'.$i, // Simple password
+                'type' => 'Customer', // Assuming students are customers
                 'status' => 'Active',
-                'picture' => 'default.jpg'
+                'picture' => 'user1.jpg'
             ]);
         }
 
-        // Create diverse test products
-        $products = [
-            // Mobile category
-            ['iPhone 13', 'Mobile', 80000, 'new-arrivals'],
-            ['Samsung Case', 'Mobile', 500, 'regular'],
-            ['Wireless Earbuds', 'Mobile', 2000, 'sale'],
+        // Create diverse test digital courses (using Product model as an example)
+        $digitalCoursesData = [
+            // Programming category
+            ['Complete Python Bootcamp', 'Programming', 99.99, 'new-arrivals', 'python_intro.pdf', 'python_course.mp4', 'python_thumb.jpg'],
+            ['JavaScript Deep Dive', 'Programming', 129.99, 'regular', 'js_handbook.pdf', 'js_course.mp4', 'js_thumb.jpg'],
+            ['React.js for Beginners', 'Programming', 79.99, 'sale', 'react_cheatsheet.pdf', 'react_course.mp4', 'react_thumb.jpg'],
 
-            // Clothing
-            ['Cotton T-Shirt', 'Clothing', 800, 'regular'],
-            ['Denim Jeans', 'Clothing', 1500, 'sale'],
+            // Design
+            ['UI/UX Design Masterclass', 'Design', 149.99, 'regular', 'uiux_notes.pdf', 'uiux_course.mp4', 'uiux_thumb.jpg'],
+            ['Adobe Photoshop Pro', 'Design', 89.99, 'sale', null, 'photoshop_course.mp4', 'ps_thumb.jpg'],
 
-            // Skin Care (popular category)
-            ['Face Wash', 'Skin Care', 300, 'regular'],
-            ['Moisturizer', 'Skin Care', 450, 'regular'],
+            // Marketing (popular category)
+            ['SEO for Small Businesses', 'Marketing', 59.99, 'regular', 'seo_checklist.pdf', 'seo_course.mp4', 'seo_thumb.jpg'],
+            ['Social Media Marketing 2025', 'Marketing', 69.99, 'regular', 'smm_strategy.pdf', 'smm_course.mp4', 'smm_thumb.jpg'],
 
-            // Stationery
-            ['Notebook Set', 'Stationery', 250, 'new-arrivals'],
+            // Business
+            ['Financial Modeling & Valuation', 'Business', 199.99, 'new-arrivals', 'financial_template.xlsx', 'finance_course.mp4', 'finance_thumb.jpg'],
 
-            // Groceries
-            ['Organic Tea', 'Groceries', 350, 'regular'],
+            // Photography
+            ['Portrait Photography Guide', 'Photography', 49.99, 'regular', 'portrait_tips.pdf', 'portrait_course.mp4', 'portrait_thumb.jpg'],
         ];
 
-        foreach ($products as $product) {
-            Product::create([
-                'title' => $product[0],
-                'description' => 'Description for '.$product[0],
-                'ex_description' => 'Detailed info about '.$product[0],
-                'price' => $product[2],
-                'quantity' => 100,
-                'category' => $product[1],
-                'type' => $product[3],
-                'picture' => 'product.jpg',
-                'picture2' => 'product.jpg',
-                'created_at' => Carbon::now()->subDays(rand(0, 30))
+        foreach ($digitalCoursesData as $course) {
+            Product::create([ // Using Product model to store digital course data
+                'title' => $course[0],
+                'description' => 'Comprehensive course on ' . $course[0],
+                'ex_description' => 'Detailed modules and practical exercises for ' . $course[0],
+                'price' => $course[2],
+                'quantity' => 9999, // High quantity for digital products (unlimited access)
+                'category' => $course[1],
+                'type' => $course[3],
+                'pdf' => 'assets/pdfs/' . $course[4], // Assuming a storage path
+                'video' => 'assets/videos/' . $course[5], // Assuming a storage path
+                'picture' => 'assets/thumbnails/' . $course[6], // Assuming a storage path
+                'picture2' => 'assets/thumbnails/' . $course[6], // Same as picture for simplicity
+                'created_at' => Carbon::now()->subDays(rand(0, 60)),
+                'updated_at' => Carbon::now(),
             ]);
         }
 
-        $allProducts = Product::all();
+        $allCourses = Product::all(); // Now contains digital courses
 
-        /* Purchase History Setup */
+        /* Purchase History Setup for Digital Courses */
 
-        // User 1 buys Mobile products
+        // Student 1 buys Programming courses
         $order1 = Order::create([
             'customerId' => $users[0]->id,
             'status' => 'Completed',
-            'bill' => 80500,
-            'address' => '123 Mobile Lane',
-            'fullname' => 'Mobile User',
-            'phone' => '1111111111'
+            'bill' => $allCourses[0]->price + $allCourses[1]->price, // Python + JavaScript
+            'address' => 'Kapan, Kathmandu',
+            'fullname' => 'Ram Sharma',
+            'phone' => '1112223333',
+            'created_at' => Carbon::now()->subDays(rand(10, 20))
         ]);
-        OrderIteam::create(['orderID' => $order1->id, 'productID' => $allProducts[0]->id, 'quantity' => 1, 'price' => 80000]); // iPhone
-        OrderIteam::create(['orderID' => $order1->id, 'productID' => $allProducts[1]->id, 'quantity' => 1, 'price' => 500]); // Case
+        OrderIteam::create(['orderID' => $order1->id, 'productID' => $allCourses[0]->id, 'quantity' => 1, 'price' => $allCourses[0]->price]); // Complete Python Bootcamp
+        OrderIteam::create(['orderID' => $order1->id, 'productID' => $allCourses[1]->id, 'quantity' => 1, 'price' => $allCourses[1]->price]); // JavaScript Deep Dive
 
-        // User 2 buys Skin Care products
+        // Student 2 buys Marketing courses
         $order2 = Order::create([
             'customerId' => $users[1]->id,
             'status' => 'Completed',
-            'bill' => 750,
-            'address' => '456 Skin Care Ave',
-            'fullname' => 'Skin Care User',
-            'phone' => '2222222222'
+            'bill' => $allCourses[5]->price + $allCourses[6]->price, // SEO + Social Media Marketing
+            'address' => 'Rangali, Morang',
+            'fullname' => 'Hiri Thapa',
+            'phone' => '4445556666',
+            'created_at' => Carbon::now()->subDays(rand(5, 15))
         ]);
-        OrderIteam::create(['orderID' => $order2->id, 'productID' => $allProducts[5]->id, 'quantity' => 1, 'price' => 300]); // Face Wash
-        OrderIteam::create(['orderID' => $order2->id, 'productID' => $allProducts[6]->id, 'quantity' => 1, 'price' => 450]); // Moisturizer
+        OrderIteam::create(['orderID' => $order2->id, 'productID' => $allCourses[5]->id, 'quantity' => 1, 'price' => $allCourses[5]->price]); // SEO for Small Businesses
+        OrderIteam::create(['orderID' => $order2->id, 'productID' => $allCourses[6]->id, 'quantity' => 1, 'price' => $allCourses[6]->price]); // Social Media Marketing 2025
 
-        // User 3 makes popular purchases (multiple users buy these)
+        // Student 3 buys popular courses (multiple users might be interested)
         $order3 = Order::create([
             'customerId' => $users[2]->id,
             'status' => 'Completed',
-            'bill' => 3500, // Corrected bill amount
-            'address' => '789 Popular St',
-            'fullname' => 'Popular User',
-            'phone' => '3333333333'
+            'bill' => $allCourses[2]->price + $allCourses[3]->price, // React.js + UI/UX Design
+            'address' => 'Chabhail, Kathmandu',
+            'fullname' => 'Ayush Karki',
+            'phone' => '7778889999',
+            'created_at' => Carbon::now()->subDays(rand(1, 10))
         ]);
-        OrderIteam::create(['orderID' => $order3->id, 'productID' => $allProducts[2]->id, 'quantity' => 1, 'price' => 2000]); // Earbuds
-        OrderIteam::create(['orderID' => $order3->id, 'productID' => $allProducts[4]->id, 'quantity' => 1, 'price' => 1500]); // Jeans
+        OrderIteam::create(['orderID' => $order3->id, 'productID' => $allCourses[2]->id, 'quantity' => 1, 'price' => $allCourses[2]->price]); // React.js for Beginners
+        OrderIteam::create(['orderID' => $order3->id, 'productID' => $allCourses[3]->id, 'quantity' => 1, 'price' => $allCourses[3]->price]); // UI/UX Design Masterclass
 
-        // User 1 has Wireless Earbuds in cart
-        Cart::create(['customerId' => $users[0]->id, 'productId' => $allProducts[2]->id, 'quantity' => 1]);
+        // Student 1 has React.js for Beginners in cart
+        Cart::create(['customerId' => $users[0]->id, 'productId' => $allCourses[2]->id, 'quantity' => 1]);
 
         // Add reviews to popular items
-        Review::create(['product_id' => $allProducts[2]->id, 'name' => 'Audio Buyer', 'email' => 'audio@test.com', 'rating' => 5, 'comment' => 'Great sound!', 'status' => 1]);
-        Review::create(['product_id' => $allProducts[4]->id, 'name' => 'Fashion Buyer', 'email' => 'fashion@test.com', 'rating' => 4, 'comment' => 'Good quality', 'status' => 1]);
+        Review::create(['product_id' => $allCourses[2]->id, 'name' => 'Tech Enthusiast', 'email' => 'techenthusiast@test.com', 'rating' => 5, 'comment' => 'Fantastic React course, very clear!', 'status' => 1]);
+        Review::create(['product_id' => $allCourses[3]->id, 'name' => 'Aspiring Designer', 'email' => 'designer@test.com', 'rating' => 4, 'comment' => 'Great insights into UI/UX.', 'status' => 1]);
+        Review::create(['product_id' => $allCourses[5]->id, 'name' => 'Business Owner', 'email' => 'bizowner@test.com', 'rating' => 5, 'comment' => 'Helped my SEO immensely!', 'status' => 1]);
     }
 }

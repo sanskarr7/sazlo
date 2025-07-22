@@ -23,12 +23,12 @@
                 <div class="teacher-profile-card">
                     <div class="profile-sidebar">
                         <div class="profile-pic-container">
-                            @if($teacher->picture)
-                                <img src="{{ asset('uploads/teachers/' . $teacher->picture) }}" alt="{{ $teacher->name }}" class="profile-pic">
-                            @else
-                                {{-- Fallback to a default image if no picture is available --}}
-                                <img src="{{ asset('img/teachers/default.jpg') }}" alt="Default Teacher Image" class="profile-pic">
-                            @endif
+                         @if($teacher->picture)
+    <img src="{{ asset($teacher->picture) }}" width="100px" alt="Teacher">
+@else
+    <img src="{{ asset('img/teachers/default.jpg') }}" width="100px" alt="Default Teacher Image">
+@endif
+
                         </div>
                         <h2 class="teacher-name">{{ $teacher->name ?? 'N/A' }}</h2>
                         {{-- Dynamic information below the teacher's name --}}

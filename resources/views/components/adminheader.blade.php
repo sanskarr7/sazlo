@@ -5,7 +5,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Barcob Admin</title>
+  <title>Sazlo Admin</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="Dashboard/vendors/feather/feather.css">
   <link rel="stylesheet" href="Dashboard/vendors/ti-icons/css/themify-icons.css">
@@ -65,7 +65,7 @@
       <!-- partial:partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
       <ul class="nav">
-    <li class="nav-item">
+        <li class="nav-item">
         <a class="nav-link" href="{{ URL::to('/admin') }}">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Dashboard</span>

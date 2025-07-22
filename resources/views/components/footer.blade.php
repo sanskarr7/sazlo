@@ -37,12 +37,12 @@
                 <div class="footer__widget">
                     <h6>About Us</h6>
                     <div class="footer__newslatter">
-                        <p>Welcome to Barcob, your go-to destination for high-quality courses designed to elevate your skills and knowledge. At Barcob, we are passionate about empowering learners with a diverse range of educational resources!</p>
+                        <p>Welcome to Sazlo, your go-to destination for high-quality courses designed to elevate your skills and knowledge. At Sazlo, we are passionate about empowering learners with a diverse range of educational resources!</p>
                         <p>Phone Number : +977 9748274572
                         Email : sanskarsatyal19@gmail.com
                         </p>
-                        
-                        
+
+
                     </div>
                 </div>
             </div>

@@ -353,7 +353,11 @@
     <div class="col-lg-3 col-md-6 col-sm-6 col-md-6 col-sm-6 mix {{$item->type}}">
         <div class="product__item">
             <a href="{{URL::to('single/'.$item->id)}}">
-            <div class="product__item__pic set-bg" data-setbg="{{URL::asset('uploads/profile/products/'.$item->picture)}}">
+           <div class="product__item__pic"
+     style="background-image: url('{{ asset('uploads/profile/products/' . $item->picture) }}');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;">
                 <span class="label">New</span>
             </div>
             </a>

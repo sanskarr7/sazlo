@@ -340,6 +340,7 @@ if (!empty($userProductIds)) {
         session()->put('id',$user->id);
         session()->put('type',$user->type);
         session()->put('fullname',$user->fullname);
+         session()->put('email', $user->email);
         if($user->type=='Customer')
         {
             return redirect('/');
@@ -429,7 +430,7 @@ public function addToCart(Request $data)
     $item->customerId = session()->get('id');
     $item->save();
 
-    return redirect()->back()->with('success', 'Congratulations! Item added to the cart.');
+    return redirect()->back()->with('success', 'Congratulations! Item added to the cart. Check your cart for details.');
 }
 
 
@@ -450,9 +451,11 @@ else{
 }
 public function saveRating(Request $request, $productId)
 {
+    if (!session()->has('id')) {
+        return redirect('login')->with('error', 'Please log in to submit a review.');
+    }
+
     $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
         'rating' => 'required|integer|between:1,5',
         'comment' => 'required|string|max:1000',
     ]);
@@ -461,18 +464,40 @@ public function saveRating(Request $request, $productId)
         return redirect()->back()->withErrors($validator)->withInput();
     }
 
+    $userId = session('id');
+
+    // Check if user has purchased this product
+    $hasPurchased = OrderIteam::whereHas('order', function ($query) use ($userId) {
+        $query->where('customerId', $userId);
+    })->where('productId', $productId)->exists();
+
+    if (!$hasPurchased) {
+        return redirect()->back()->with('error', 'Only customers who purchased this product can leave a review.');
+    }
+
+    $name = session('fullname');
+    $email = session('email');
+
+    // Check for existing review by this user for this product
     $existingReview = Review::where('product_id', $productId)
-        ->where('email', $request->input('email'))
+        ->where('email', $email)
         ->first();
 
     if ($existingReview) {
-        return redirect()->back()->with('error', 'You have already submitted a review for this product.');
+        // Update existing review
+        $existingReview->rating = $request->input('rating');
+        $existingReview->comment = $request->input('comment');
+        $existingReview->status = 1; // reset status to 0 for re-approval if needed
+        $existingReview->save();
+
+        return redirect()->back()->with('success', 'Your review has been updated successfully!');
     }
 
+    // Create new review if none exists
     $review = new Review();
     $review->product_id = $productId;
-    $review->name = $request->input('name');
-    $review->email = $request->input('email');
+    $review->name = $name;
+    $review->email = $email;
     $review->rating = $request->input('rating');
     $review->comment = $request->input('comment');
     $review->status = 0;
@@ -480,6 +505,9 @@ public function saveRating(Request $request, $productId)
 
     return redirect()->back()->with('success', 'Thank you for your review!');
 }
+
+
+
       public function liveteacher()
     {
         // Add authentication check using session()->has('id')
@@ -584,5 +612,23 @@ public function saveRating(Request $request, $productId)
             Log::error("Live Class Booking Error: " . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to book session. An internal error occurred.');
         }
-    }}
+
+    }
+    public function getLatestNews()
+    {
+        $apiKey = '6274da6be8734af0a58ab969219455f3'; // replace with your key
+        $response = Http::get("https://newsapi.org/v2/everything", [
+            'q' => 'online courses OR technology OR AI education',
+            'language' => 'en',
+            'sortBy' => 'publishedAt',
+            'pageSize' => 6,
+            'apiKey' => $apiKey,
+        ]);
+
+        $articles = $response->json()['articles'] ?? [];
+
+        return view('news', compact('articles'));
+    }
+}
+
 

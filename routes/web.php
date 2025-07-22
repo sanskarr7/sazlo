@@ -91,3 +91,9 @@ Route::get('/contactus', function() {
 // Payment Routes
 Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment-failure', [PaymentController::class, 'failure'])->name('payment.failure');
+
+
+
+
+// routes/web.php
+Route::get('/news-feed', [MainController::class, 'getLatestNews']);

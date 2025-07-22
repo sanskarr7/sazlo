@@ -22,7 +22,8 @@
     <link rel="stylesheet" href="{{URL::asset('css/owl.carousel.min.css')}}" type="text/css">
     <link rel="stylesheet" href="{{URL::asset('css/slicknav.min.css')}}" type="text/css">
     <link rel="stylesheet" href="{{URL::asset('css/style.css')}}" type="text/css">
-
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 </head>
 

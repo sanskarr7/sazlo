@@ -18,18 +18,72 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-   public function index()
+public function index()
 {
     if (session()->get('type') == 'Admin') {
+        $totalTeachers = Teacher::count();
+        $totalBookings = Bookingclass::count();
         $totalProducts = Product::count();
         $totalReviews = DB::table('reviews')->count();
         $totalOrders = Order::count();
         $totalUsers = User::where('type', 'Customer')->count();
 
-        return view('Dashboard.index', compact('totalProducts', 'totalReviews', 'totalOrders', 'totalUsers'));
+        // FIX #1: Using 'bill' as the column name for revenue.
+        $totalRevenue = Order::where('status', 'Completed')->sum('bill');
+
+        // ---- START: BOOKING CHART DATA ----
+        $bookingsData = BookingClass::select(
+            DB::raw('count(id) as count'),
+            DB::raw("DATE_FORMAT(created_at, '%b') as month_name")
+        )
+        ->where('created_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
+        ->groupBy('month_name')
+        ->orderBy(DB::raw('MIN(created_at)'))
+        ->get()->keyBy('month_name');
+
+        $bookingMonths = [];
+        $bookingCounts = [];
+        for ($i = 0; $i < 6; $i++) {
+            // Generates the last 6 months in order: Feb, Mar, Apr, May, Jun, Jul
+            $month = Carbon::now()->subMonths(5 - $i)->format('M');
+            $bookingMonths[] = $month;
+            $bookingCounts[] = $bookingsData->get($month)->count ?? 0;
+        }
+        // ---- END: BOOKING CHART DATA ----
+
+        // ---- START: REVENUE CHART DATA ----
+        $revenueData = Order::select(
+            // FIX #2: Using 'bill' here as well.
+            DB::raw('sum(bill) as revenue'),
+            DB::raw("DATE_FORMAT(created_at, '%b') as month_name")
+        )
+        ->where('status', 'Completed')
+        ->where('created_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
+        ->groupBy('month_name')
+        ->orderBy(DB::raw('MIN(created_at)'))
+        ->get()->keyBy('month_name');
+
+        $revenueMonths = [];
+        $revenueAmounts = [];
+        for ($i = 0; $i < 6; $i++) {
+            $month = Carbon::now()->subMonths(5 - $i)->format('M');
+            $revenueMonths[] = $month;
+            $revenueAmounts[] = $revenueData->get($month)->revenue ?? 0;
+        }
+        // ---- END: REVENUE CHART DATA ----
+
+        return view('Dashboard.index', compact(
+            'totalTeachers', 'totalBookings', 'totalProducts',
+            'totalReviews', 'totalOrders', 'totalUsers', 'totalRevenue',
+            'bookingMonths', 'bookingCounts',
+            'revenueMonths', 'revenueAmounts'
+        ));
     }
+
     return redirect()->back();
 }
+
+
 
     public function profile()
     {
