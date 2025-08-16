@@ -22,20 +22,25 @@
                     ['label' => 'Total Product', 'count' => $totalProducts, 'url' => 'adminProducts', 'class' => 'secondary'],
                     ['label' => 'Total Reviews', 'count' => $totalReviews, 'url' => 'reviews', 'class' => 'warning'],
                     ['label' => 'Number of Users', 'count' => $totalUsers, 'url' => 'ourCustomers', 'class' => 'dark'],
+               ['label' => 'Chat with Us', 'count' => 'Chat with User', 'url' => 'https://dashboard.tawk.to/#/dashboard/66b88bc5146b7af4a438f503', 'class' => 'success', 'external' => true],
+
                 ];
             @endphp
 
-            @foreach($cards as $card)
-                <div class="col-md-4 col-lg-3 mb-4"> <a href="{{ url($card['url']) }}" class="text-decoration-none">
-                        <div class="card text-white bg-{{ $card['class'] }} shadow-sm rounded-3 hover-zoom h-100">
-                            <div class="card-body">
-                                <p class="mb-2">{{ $card['label'] }}</p>
-                                <h3 class="font-weight-bold">{{ $card['count'] }}</h3>
-                            </div>
-                        </div>
-                    </a>
+         @foreach($cards as $card)
+    <div class="col-md-4 col-lg-3 mb-4">
+        <a href="{{ $card['url'] }}"
+           class="text-decoration-none"
+           @if(!empty($card['external']) && $card['external']) target="_blank" @endif>
+            <div class="card text-white bg-{{ $card['class'] }} shadow-sm rounded-3 hover-zoom h-100">
+                <div class="card-body">
+                    <p class="mb-2">{{ $card['label'] }}</p>
+                    <h3 class="font-weight-bold">{{ $card['count'] }}</h3>
                 </div>
-            @endforeach
+            </div>
+        </a>
+    </div>
+@endforeach
         </div>
 
         <div class="row mt-5">

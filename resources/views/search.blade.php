@@ -167,8 +167,12 @@
                                         </spam>
                                     </li> <!-- Display the user's name -->
                                 @else
-                                    <li><a href="{{ URL::to('/login') }}">Login</a></li>
-                                    <li><a href="{{ URL::to('/register') }}">Register</a></li>
+                                   <li><a href="#">SignUp</a>
+                                <ul class="dropdown">
+                                 <li><a href="{{URL::to('/login')}}">Login</a></li>
+                            <li><a href="{{URL::to('/register')}}">Register</a></li>
+                                </ul>
+                            </li>
                                 @endif
                         </ul>
                         </a>

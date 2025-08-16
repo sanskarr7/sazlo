@@ -29,7 +29,7 @@ public function index()
         $totalUsers = User::where('type', 'Customer')->count();
 
         // FIX #1: Using 'bill' as the column name for revenue.
-        $totalRevenue = Order::where('status', 'Completed')->sum('bill');
+        $totalRevenue = Order::where('status', 'Accepted')->sum('bill');
 
         // ---- START: BOOKING CHART DATA ----
         $bookingsData = BookingClass::select(
@@ -57,7 +57,7 @@ public function index()
             DB::raw('sum(bill) as revenue'),
             DB::raw("DATE_FORMAT(created_at, '%b') as month_name")
         )
-        ->where('status', 'Completed')
+        ->where('status', 'Accepted')
         ->where('created_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
         ->groupBy('month_name')
         ->orderBy(DB::raw('MIN(created_at)'))
