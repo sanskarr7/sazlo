@@ -97,3 +97,5 @@ Route::get('/payment-failure', [PaymentController::class, 'failure'])->name('pay
 
 // routes/web.php
 Route::get('/news-feed', [MainController::class, 'getLatestNews']);
+
+

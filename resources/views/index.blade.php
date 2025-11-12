@@ -499,7 +499,7 @@
     <!-- Instagram Section End --> --}}
 
     <!-- Latest Blog Section Begin -->
-   <section class="latest spad">
+   {{-- <section class="latest spad">
     <div class="container">
         <div class="section-title text-center mb-5">
             <span>Latest News</span>
@@ -538,7 +538,60 @@
             </div>
         </div>
     </div>
+</section> --}}
+<section class="latest spad">
+    <div class="container">
+        <div class="section-title text-center mb-5">
+            <span>Latest News</span>
+            <h2>New Tech News 2025</h2>
+        </div>
+        <div class="row g-4" id="news-container">
+            <!-- Dynamic news cards will be appended here -->
+        </div>
+    </div>
 </section>
+
+<script>
+const apiKey = '6274da6be8734af0a58ab969219455f3'; // Your NewsAPI key
+const newsContainer = document.getElementById('news-container');
+
+async function fetchTechNews() {
+    try {
+        const response = await fetch(`https://newsapi.org/v2/top-headlines?category=technology&language=en&pageSize=6&apiKey=${apiKey}`);
+        const data = await response.json();
+        const articles = data.articles;
+
+        newsContainer.innerHTML = ''; // clear existing content
+
+        articles.forEach(article => {
+            const newsCard = document.createElement('div');
+            newsCard.classList.add('col-lg-4', 'col-md-6', 'col-sm-6');
+
+            const imageUrl = article.urlToImage || 'img/blog/default.jpg';
+
+            newsCard.innerHTML = `
+                <a href="${article.url}" target="_blank" style="text-decoration: none; color: inherit;">
+                    <div class="blog__item glass-card">
+                        <div class="blog__item__pic" style="background-image: url('${imageUrl}');"></div>
+                        <div class="blog__item__text">
+                            <span><img src="img/icon/calendar.png" alt="calendar icon" /> ${new Date(article.publishedAt).toLocaleDateString()}</span>
+                            <h5>${article.title}</h5>
+                            <p>${article.description || ''}</p>
+                        </div>
+                    </div>
+                </a>
+            `;
+            newsContainer.appendChild(newsCard);
+        });
+    } catch (error) {
+        console.error('Error fetching news:', error);
+        newsContainer.innerHTML = `<p>Unable to load news at the moment.</p>`;
+    }
+}
+
+// Call the function when page loads
+fetchTechNews();
+</script>
 
 <style>
 .latest {
