@@ -152,7 +152,7 @@
 <div id="bookSessionModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
     <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; position: relative;">
         <span class="close-button" onclick="closeBookSessionPopup()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
-        <h2 style="margin-bottom: 20px; font-size: 1.5em; text-align: center;">Book Your Session</h2>
+        <h2 style="margin-bottom: 20px; font-size: 1.5em; text-align: center;">Book Your Class</h2>
         <form action="{{ route('book.live.class') }}" method="POST">
             @csrf {{-- Laravel CSRF token for security --}}
 
@@ -161,12 +161,16 @@
 
             <div class="form-group" style="margin-bottom: 15px;">
                 <label for="student_name" style="display: block; margin-bottom: 5px; font-weight: bold;">Your Name:</label>
-                <input type="text" id="student_name" name="student_name" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="text" name="student_name" class="form-control mt-2"
+           value="{{ session()->get('fullname') ?? '' }}"
+           placeholder="Enter Your Name" required>
             </div>
 
             <div class="form-group" style="margin-bottom: 15px;">
                 <label for="student_email" style="display: block; margin-bottom: 5px; font-weight: bold;">Your Email:</label>
-                <input type="email" id="student_email" name="student_email" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="email" name="student_email" class="form-control mt-2"
+           value="{{ session()->get('email') ?? '' }}"
+           placeholder="Enter Your Email" required>
             </div>
 
             <p style="margin-top: 15px; text-align: center;">You are booking a class with: <strong>{{ $teacher->name ?? 'N/A' }}</strong></p>

@@ -4,7 +4,7 @@
     <div class="main-panel flex-grow-1">
         <div class="content-wrapper">
             <div class="row">
-                <div class="col-md-12 grid-margin stretch-card">
+                <div class="col-md-11 grid-margin stretch-card">
                     <div class="card">
                         <div class="card-body">
                             <p class="card-title mb-3">Teacher Management</p>
@@ -13,8 +13,24 @@
                                 data-target="#addTeacherModal">
                                 <i class="mdi mdi-plus"></i> Add Teacher
                             </button>
+@if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-                            @if (session('success'))
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+                            {{-- @if (session('success'))
                                 <div class="alert alert-success alert-dismissible fade show mt-2">
                                     {{ session('success') }}
                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -30,7 +46,7 @@
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
-                            @endif
+                            @endif --}}
 
                             <div class="table-responsive mt-3">
                                 <table class="table table-striped table-borderless">
@@ -166,6 +182,7 @@
     </div>
 
     <div class="modal fade" id="addTeacherModal" tabindex="-1" role="dialog" aria-hidden="true">
+
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -196,6 +213,7 @@
                         <div class="form-group">
                             <label>Total Seats</label>
                             <input type="number" name="total_seats" class="form-control" min="0" required>
+
                         </div>
                         <div class="form-group">
                             <label>Description</label>
@@ -337,65 +355,71 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editLiveClassModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Live Class</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editLiveClassForm" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="form-group">
-                            <label>Class Title</label>
-                            <input type="text" name="title" id="edit_live_class_title" class="form-control"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label>Meeting URL</label>
-                            <input type="url" name="link" id="edit_live_class_link" class="form-control"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label>Start Time</label>
-                            <input type="datetime-local" name="start_time" id="edit_live_class_start_time"
-                                class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>End Time (Optional)</label>
-                            <input type="datetime-local" name="end_time" id="edit_live_class_end_time"
-                                class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Description (Optional)</label>
-                            <textarea name="description" id="edit_live_class_description" class="form-control" rows="2"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Status</label>
-                            <select name="status" id="edit_live_class_status" class="form-control">
-                                <option value="scheduled">Scheduled</option>
-                                <option value="active">Active</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Update Class</button>
-                        </div>
-                    </form>
-                </div>
+   <div class="modal fade" id="editLiveClassModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Live Class</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+
+            <div class="modal-body">
+                <form id="editLiveClassForm" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="form-group">
+                        <label>Class Title</label>
+                        <input type="text" name="title" id="edit_live_class_title" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Meeting URL</label>
+                        <input type="url" name="link" id="edit_live_class_link" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="datetime-local" name="start_time" id="edit_live_class_start_time" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Time (Optional)</label>
+                        <input type="datetime-local" name="end_time" id="edit_live_class_end_time" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description (Optional)</label>
+                        <textarea name="description" id="edit_live_class_description" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status" id="edit_live_class_status" class="form-control">
+                            <option value="scheduled">Scheduled</option>
+                            <option value="active">Active</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Class</button>
+                    </div>
+
+                </form>
+            </div>
+
         </div>
     </div>
-
-
-    <x-adminfooter />
 </div>
+
+<x-adminfooter />
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

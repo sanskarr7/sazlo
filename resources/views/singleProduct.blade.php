@@ -64,17 +64,17 @@
                     <div class="description-section">
                         <p class="description">{{ $product->description }}</p>
                     </div>
-@if (session('success'))
-    <div class="alert alert-success text-center" style="margin-top: 20px;">
-        {{ session('success') }}
-    </div>
-@endif
+                    @if (session('success'))
+                        <div class="alert alert-success text-center" style="margin-top: 20px;">
+                            {{ session('success') }}
+                        </div>
+                    @endif
 
-@if (session('error'))
-    <div class="alert alert-danger text-center" style="margin-top: 20px;">
-        {{ session('error') }}
-    </div>
-@endif
+                    @if (session('error'))
+                        <div class="alert alert-danger text-center" style="margin-top: 20px;">
+                            {{ session('error') }}
+                        </div>
+                    @endif
                     <!-- Replace the existing form section with this code -->
                     @php
                         // Check if product is already in cart using session()->get('id')
@@ -158,7 +158,7 @@
                             @endforelse
 
                             @if ($totalReviewsCount > $initialLimit)
-                                <button id="showMoreReviewsBtn" class="btn btn-outline-primary mt-2">
+                                <button id="showMoreReviewsBtn" class="btn btn-dark text-white mt-2">
                                     See More Reviews
                                 </button>
                             @endif

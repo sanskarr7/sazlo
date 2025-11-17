@@ -96,17 +96,17 @@
         </div>
     </li>
     <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
-            <i class="icon-bar-graph menu-icon"></i>
-            <span class="menu-title">Our Orders</span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="charts">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{{ url('ourOrders') }}">View All</a></li>
-            </ul>
-        </div>
-    </li>
+    <a class="nav-link" data-toggle="collapse" href="#ourOrdersCollapse" aria-expanded="false" aria-controls="ourOrdersCollapse">
+        <i class="icon-bar-graph menu-icon"></i>
+        <span class="menu-title">Our Orders</span>
+        <i class="menu-arrow"></i>
+    </a>
+    <div class="collapse" id="ourOrdersCollapse">
+        <ul class="nav flex-column sub-menu">
+            <li class="nav-item"><a class="nav-link" href="{{ url('ourOrders') }}">View All</a></li>
+        </ul>
+    </div>
+</li>
     <li class="nav-item">
         <a class="nav-link" data-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
             <i class="icon-head menu-icon"></i>
@@ -120,48 +120,46 @@
             </ul>
         </div>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#error" aria-expanded="false" aria-controls="error">
-            <i class="icon-ban menu-icon"></i>
-            <span class="menu-title">Categories</span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="error">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{{ URL::to('adminCategoriesC') }}">Add Category</a></li>
-            </ul>
-        </div>
+      <li class="nav-item">
+      <a class="nav-link" data-toggle="collapse" href="#categoriesCollapse" aria-expanded="false" aria-controls="categoriesCollapse">
+        <i class="icon-ban menu-icon"></i>
+        <span class="menu-title">Categories</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="categoriesCollapse">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item"><a class="nav-link" href="{{ URL::to('adminCategoriesC') }}">Add Category</a></li>
+        </ul>
+      </div>
     </li>
+
+    <!-- Customer Reviews -->
     <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#error" aria-expanded="false" aria-controls="error">
-            <i class="icon-paper menu-icon"></i>
-            <span class="menu-title">Customer Reviews</span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="error">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{{ URL::to('reviews') }}">Manage Reviews</a></li>
-            </ul>
-        </div>
+      <a class="nav-link" data-toggle="collapse" href="#reviewsCollapse" aria-expanded="false" aria-controls="reviewsCollapse">
+        <i class="icon-paper menu-icon"></i>
+        <span class="menu-title">Customer Reviews</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="reviewsCollapse">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item"><a class="nav-link" href="{{ URL::to('reviews') }}">Manage Reviews</a></li>
+        </ul>
+      </div>
     </li>
 
 <li class="nav-item">
-        <a class="nav-link" data-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
-            <i class="icon-bar-graph menu-icon"></i>
-            <span class="menu-title">Our Teacher</span>
-            <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="charts">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{{ route('teachers') }}">Manage Teacher</a></li>
-            </ul>
-        </div>
-        <div class="collapse" id="charts">
-            <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="{{ route('booking') }}">Manage Booking</a></li>
-            </ul>
-        </div>
-
+      <a class="nav-link" data-toggle="collapse" href="#teachersCollapse" aria-expanded="false" aria-controls="teachersCollapse">
+        <i class="mdi mdi-book-open-page-variant menu-icon"></i>
+        <span class="menu-title">Our Teacher</span>
+        <i class="menu-arrow"></i>
+      </a>
+      <div class="collapse" id="teachersCollapse">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item"><a class="nav-link" href="{{ route('teachers') }}">Manage Teacher</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('booking') }}">Manage Booking</a></li>
+        </ul>
+      </div>
+    </li>
 </ul>
 
       </nav>

@@ -10,6 +10,7 @@ class BookingClass extends Model
     use HasFactory;
 
     protected $table = 'booking_classes'; // Explicitly define table name
+protected $dates = ['start_time', 'reminder_sent_at'];
 
     protected $fillable = [
         'live_class_id',
@@ -26,7 +27,7 @@ class BookingClass extends Model
 
     public function liveClass()
     {
-        return $this->belongsTo(LiveClass::class);
+        return $this->belongsTo(LiveClass::class, 'live_class_id');
     }
 
     public function user()

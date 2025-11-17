@@ -106,7 +106,10 @@
                     <li>Total <span>Rs {{$total}}.00 </span></li>
                 </ul>
                 <form action="{{URL::to('checkout')}}">
-                    <input type="text" name="fullname" class="form-control mt-2" placeholder="Enter Full Name" id="" required>
+                    <input type="text" name="fullname" class="form-control mt-2"
+       value="{{ session()->get('fullname') }}"
+       placeholder="Enter Full Name" required>
+
                     <input type="text" name="phone" class="form-control mt-2" placeholder="Enter Phone Number" id="" required>
                     <input type="text" name="address" class="form-control mt-2" placeholder="Enter Address" id="" required>
                     <input type="hidden" name="bill" class="form-control mt-2" value="{{$total}}" placeholder="Enter Address" id="" required>
@@ -114,7 +117,7 @@
                     <input type="submit" name="checkout" class="primary-btn mt-2 btn-block" value="Proceed to checkout">
 
                 </form>
-               
+
             </div>
         </div>
     </div>

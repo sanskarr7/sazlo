@@ -13,6 +13,7 @@ use App\Models\OrderIteam;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use App\Models\Review;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -21,10 +22,20 @@ class MainController extends Controller
 
     public function index()
     {
-       $allProducts=Product::all();
-       $newArrival=Product::where('type','new-arrivals')->get();
-       $hotSale=Product::where('type','sale')->get();
-       return view('index',compact('allProducts','newArrival','hotSale'));
+       $allProducts = Product::latest()->take(4)->get();
+
+    $newArrival = Product::where('type', 'new-arrivals')
+                    ->latest()
+                    ->take(4)
+                    ->get();
+
+    $hotSale = Product::where('type', 'sale')
+                    ->latest()
+                    ->take(4)
+                    ->get();
+
+    return view('index', compact('allProducts', 'newArrival', 'hotSale'));
+
     }
     public function cart()
     {
@@ -330,45 +341,97 @@ if (!empty($userProductIds)) {
        session()->forget('type');
        return redirect('/login');
     }
-    public function loginUser(Request $data)
-    {
-       $user = User::where('email', $data->input('email'))->where('password',$data->input('password'))-> first();
-       if($user){
-        if($user->status=="Blocked"){
-            return redirect('login')->with('error','Your Status Is Blocked');
+   public function loginUser(Request $data)
+{
+    $user = User::where('email', $data->input('email'))->first();
+
+    if($user) {
+        if ($user->status == "Blocked") {
+            return redirect('login')->with('error', 'Your status is blocked.');
         }
-        session()->put('id',$user->id);
-        session()->put('type',$user->type);
-        session()->put('fullname',$user->fullname);
-         session()->put('email', $user->email);
-        if($user->type=='Customer')
-        {
+
+        // Check hashed password
+        if (!Hash::check($data->input('password'), $user->password)) {
+            return redirect('login')->with('error', 'Email or password is incorrect.');
+        }
+
+        // Password is correct, store session
+        session()->put('id', $user->id);
+        session()->put('type', $user->type);
+        session()->put('fullname', $user->fullname);
+        session()->put('email', $user->email);
+
+        if ($user->type == 'Customer') {
             return redirect('/');
-        }
-        else if($user->type=='Admin')
-        {
+        } else if ($user->type == 'Admin') {
             return redirect('/admin');
         }
-       }
-       else{
-        return redirect('login')->with('error','Email/Password is incorrect');
-       }
+    } else {
+        return redirect('login')->with('error', 'Email or password is incorrect.');
     }
-    public function registerUser(Request $data)
-    {
-        $newUser= new User();
-        $newUser->fullname=$data->input('fullname');
-        $newUser->email=$data->input('email');
-        $newUser->password=$data->input('password');
-        $newUser->picture=$data->file('file')->getClientOriginalName();
-        $data->file('file')->move('uploads/profile/',$newUser->picture);
-        $newUser->type='Customer';
-        if($newUser->save())
-        {
-            return redirect('login')->with('success','Congratulation ! Your Account is Ready');
-        }
-        return view ('register');
 }
+//     public function registerUser(Request $data)
+//     {
+//         $newUser= new User();
+//         $newUser->fullname=$data->input('fullname');
+//         $newUser->email=$data->input('email');
+//         $newUser->password=$data->input('password');
+//         $newUser->picture=$data->file('file')->getClientOriginalName();
+//         $data->file('file')->move('uploads/profile/',$newUser->picture);
+//         $newUser->type='Customer';
+//         if($newUser->save())
+//         {
+//             return redirect('login')->with('success','Congratulation ! Your Account is Ready');
+//         }
+//         return view ('register');
+// }
+public function registerUser(Request $data)
+{
+    $messages = [
+        'fullname.required' => 'Full name is required.',
+        'email.required' => 'Email is required.',
+        'email.email' => 'Email must be a valid email address containing @.',
+        'email.unique' => 'This email is already registered.',
+        'password.required' => 'Password is required.',
+        'password.min' => 'Password must be at least 8 characters.',
+        'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
+        'file.required' => 'Profile picture is required.',
+        'file.image' => 'Profile picture must be an image.',
+        'file.mimes' => 'Profile picture must be jpeg, png, jpg, or gif.',
+        'file.max' => 'Profile picture size should not exceed 2MB.',
+    ];
+
+    $validatedData = $data->validate([
+        'fullname' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => [
+            'required',
+            'string',
+            'min:8',
+            'regex:/[a-z]/',    // lowercase
+            'regex:/[A-Z]/',    // uppercase
+            'regex:/[0-9]/',    // number
+            'regex:/[@$!%*#?&]/' // special char
+        ],
+        'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ], $messages);
+
+    // Save user
+    $newUser = new User();
+    $newUser->fullname = $validatedData['fullname'];
+    $newUser->email = $validatedData['email'];
+    $newUser->password = Hash::make($data->input('password'));
+    $newUser->picture = $data->file('file')->getClientOriginalName();
+    $data->file('file')->move('uploads/profile/', $newUser->picture);
+    $newUser->type = 'Customer';
+
+    if($newUser->save()) {
+        return redirect('login')->with('success','Congratulations! Your account is ready.');
+    }
+
+    return back()->with('error','Failed to register. Please try again.');
+}
+
 public function updateUser(Request $data)
     {
         $user=User::find(session()->get('id'));
@@ -630,5 +693,4 @@ public function saveRating(Request $request, $productId)
         return view('news', compact('articles'));
     }
 }
-
 

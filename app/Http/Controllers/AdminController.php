@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Mail\ClassReminderMail;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Short;
 use App\Models\OrderIteam;
 use App\Models\OrderItem;
 use App\Models\Teacher;
@@ -13,7 +15,9 @@ use App\Models\BookingClass;
 use App\Models\LiveClass;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
@@ -198,9 +202,9 @@ public function index()
         if (session()->get('type') == 'Admin') {
             $request->validate([
                 'name' => 'required|string|max:255',
-                'number' => 'required|string|max:255',
+                'number' => 'required|numeric',
                 'course' => 'required|string|max:255',
-                'price' => 'required|numeric',
+                'price' => 'required|numeric|min:0',
                 'total_seats' => 'required|integer|min:0', // Added validation for total_seats
                 'description' => 'nullable|string',
                 'more_info' => 'nullable|string',
@@ -573,21 +577,27 @@ public function deleteCategory($id)
 
     public function booking()
     {
-        $bookings = DB::table('booking_classes')
-            ->join('live_classes', 'booking_classes.live_class_id', '=', 'live_classes.id')
-            ->join('teachers', 'live_classes.teacher_id', '=', 'teachers.id')
-            ->select(
-                'booking_classes.id', // Include booking ID for actions
-                'booking_classes.student_name',
-                'booking_classes.student_email',
-                'booking_classes.status as booking_status', // Alias to avoid conflict with live_classes.status
-                'live_classes.status as live_class_status', // Status of the live class
-                'teachers.name as teacher_name',
-                'teachers.picture as teacher_picture'
-            )
-            ->get();
+     $bookings = DB::table('booking_classes')
+    ->join('live_classes', 'booking_classes.live_class_id', '=', 'live_classes.id')
+    ->join('teachers', 'live_classes.teacher_id', '=', 'teachers.id')
+    ->select(
+        'booking_classes.id',
+        'booking_classes.student_name',
+        'booking_classes.student_email',
+        'booking_classes.status as booking_status',
+        'live_classes.start_time as live_class_start_time', // <-- add this
+        'booking_classes.reminder_sent_at', // <-- add this
+        'live_classes.status as live_class_status',
+        'teachers.id as teacher_id',
+        'teachers.name as teacher_name',
+        'teachers.picture as teacher_picture'
+    )
+    ->get();
 
-        return view('Dashboard.booking', compact('bookings'));
+    // Group bookings by teacher_id
+    $teacherBookings = $bookings->groupBy('teacher_id');
+
+    return view('Dashboard.booking', compact('teacherBookings'));
     }
 
     // New method to accept a booking
@@ -647,4 +657,55 @@ public function deleteCategory($id)
             return redirect()->back()->with('info', 'Booking status is already ' . $booking->status . '.');
         }
     }
+
+    public function sendBookingReminder($id)
+{
+    $booking = BookingClass::with('liveClass')->find($id);
+
+    if (!$booking) {
+        return redirect()->back()->with('error', 'Booking not found.');
+    }
+
+    if ($booking->status !== 'accepted') {
+        return redirect()->back()->with('info', 'Reminder can only be sent for accepted bookings.');
+    }
+
+    try {
+        Mail::to($booking->student_email)->send(new ClassReminderMail($booking));
+        $booking->update(['reminder_sent_at' => now()]);
+        return redirect()->back()->with('success', "Reminder sent to {$booking->student_email}!");
+    } catch (\Exception $e) {
+        \Log::error("Failed to send email to {$booking->student_email}: " . $e->getMessage());
+        return redirect()->back()->with('error', 'Failed to send reminder. Check logs.');
+    }
 }
+public function sendReminderAll($teacherId)
+{
+    // Get all accepted bookings of this teacher which haven't received reminder
+    $bookings = BookingClass::whereHas('liveClass', function($query) use ($teacherId) {
+        $query->where('teacher_id', $teacherId);
+    })
+    ->where('status', 'accepted')
+    ->whereNull('reminder_sent_at')
+    ->get();
+
+    if ($bookings->isEmpty()) {
+        return back()->with('info', 'All reminders already sent for this teacher.');
+    }
+
+    foreach ($bookings as $booking) {
+        try {
+            Mail::to($booking->student_email)->send(new ClassReminderMail($booking));
+            $booking->update(['reminder_sent_at' => now()]);
+        } catch (\Exception $e) {
+            \Log::error("Failed to send reminder to {$booking->student_email}: " . $e->getMessage());
+        }
+    }
+
+    return back()->with('success', 'Reminders sent to all students of this teacher!');
+}
+
+
+}
+
+

@@ -63,6 +63,12 @@ Route::post('/bookings/{id}/accept', [AdminController::class, 'acceptBooking'])-
 Route::post('/bookings/{id}/reject', [AdminController::class, 'rejectBooking'])->name('bookings.reject');
 
 
+Route::post('/bookings/{id}/send-reminder', [AdminController::class, 'sendBookingReminder'])
+    ->name('bookings.sendReminder');
+Route::post('/bookings/send-reminder-all/{teacherId}', [AdminController::class, 'sendReminderAll'])
+    ->name('bookings.sendReminderAll');
+
+
 
 Route::get('/', [MainController::class, 'index'])->name('index');
 Route::get('/cart', [MainController::class, 'cart']);
